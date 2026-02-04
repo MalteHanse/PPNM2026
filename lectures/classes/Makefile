@@ -6,4 +6,4 @@ Out.txt : main
 # 	./main > Out.txt corresponds to:
 	./$< > $@
 
-main : main.o
+main : main.o vec.h
