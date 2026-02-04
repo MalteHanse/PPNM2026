@@ -16,14 +16,14 @@ bool approx(double a, double b, double acc=1e-9, double eps=1e-9) {
 struct vec{
     double x, y, z;
 
-    // constructers
+    // constructors
     vec(double x, double y, double z) : x(x), y(y), z(z) {}     // parameterized ctor
-    vec() : vec(0, 0, 0) {}                                       // unparametrized ctor
+    vec() : vec(0, 0, 0) {}                                       // unparameterized ctor
     vec(const vec&) = default;                                  // copy
     vec(vec&&) = default;                                       // move
-    ~vec() = default;                                           // destructer
+    ~vec() = default;                                           // destructor
     
-    // assigments
+    // assignments
     vec& operator=(const vec&) = default;                       // copy assignment
     vec& operator=(vec&&) = default;                            // move assignment
 
@@ -41,57 +41,50 @@ struct vec{
     }
 
     // debugging
-    void print(const std::string& s = "") const;
+    void print(const std::string& s = "") const {
+        std::cout << s << x << " " << y << " " << z << std::endl;
+    }
 
     bool approx(const double a, const double b) const;
-    bool approx(const vec& a, const vec& b) {
-        if (approx(a.x, b.x)) {
+    bool approx(const vec& a, const vec& b) const {
+        // Fixed logic: return false if ANY component is NOT approximately equal
+        if (!::approx(a.x, b.x)) {  // using :: to call global approx function
             return false;
         }
-        if (!approx(a.y,b.y)) {
+        if (!::approx(a.y, b.y)) {
             return false;
         }
-        if (!approx(a.z,b.z)) {
+        if (!::approx(a.z, b.z)) {
             return false;
         }
         return true;
-	}
-
-    // std::ostream& operator<<(std::ostream& os, const vec& v) {
-    //     os << "{ " << v.x << ", " << v.y << ", " << v.z << " } ";
-    //     return os;
-    // }
+    }
 
     // dot-product
-    // double dot(const vec& a, const vec& b) {
-    //     double sum = std::sum(a * b);
-    //     return sum;
-    // }
+    double dot(const vec& b) {
+        double sum = x * b.x + y * b.y + z * b.z;
+        return sum;
+    }
 
     // cross-product
-    // vec cross(const vec& a, const vec& b) {
-    //     double x = a[1] * b[2] - a[2] * b[1];
-    //     double y = a[2] * b[0] - a[0] * b[2];
-    //     double z = a[0] * b[1] - a[1] * b[0];
-    //     return vec(x, y, z);
-    // }
+    vec cross(const vec& b) {
+        double new_x = y * b.z - z * b.y;
+        double new_y = z * b.x - x * b.z;
+        double new_z = x * b.y - y * b.x;
+        return vec(new_x, new_y, new_z);
+    }
 
     // norm
-    // double norm(const vec& v) {
-    //     double length = std::sqrt(std::pow(v[0], 2) + std::pow(v[1], 2) + std::pow(v[2], 2));
-    //     return length;
-    // }
+    double norm() {
+        double length = std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
+        return length;
+    }
 };
 
-void vec::print(std::string s) const {
-    std::cout << s << x << " " << y << " " << z << std::endl;
-}
-
-// non-memeber operators
+// non-member operators
 vec operator-(const vec&);
 vec operator-(const vec&, const vec&);
 vec operator+(const vec&, const vec&);
 vec operator*(const vec&, double);
 vec operator*(double, const vec&);
 vec operator/(const vec&, double);
-
