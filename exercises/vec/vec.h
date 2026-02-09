@@ -82,9 +82,19 @@ struct vec{
 };
 
 // non-member operators
-vec operator-(const vec&);
-vec operator-(const vec&, const vec&);
-vec operator+(const vec&, const vec&);
-vec operator*(const vec&, double);
-vec operator*(double, const vec&);
-vec operator/(const vec&, double);
+// vec operator-(const vec&);
+vec operator-(const vec& a, const vec& b) {
+    return vec(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+vec operator+(const vec& a, const vec& b) {
+    return vec(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+vec operator*(const vec& a, double c) {
+    return vec(a.x * c, a.y * c, a.z * c);
+}
+vec operator*(double c, const vec& a) {
+    return vec(c * a.x, c * a.y, c * a.z);
+}
+vec operator/(const vec& a, double c) {
+    return vec(a.x / c, a.y / c, a.z / c);
+}

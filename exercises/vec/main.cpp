@@ -10,15 +10,15 @@ int main() {
     w.print("w = ");
 
     std::cout << "----Add----" << std::endl;
-    vec a = vec(v.x + w.x, v.y + w.y, v.z + w.z);
+    vec a = v + w;
     a.print("v + w = ");
 
     std::cout << "----subtract----" << std::endl;
-    vec b = vec(v.x - w.x, v.y - w.y, v.z - w.z);
+    vec b = v - w;
     b.print("v - w = ");
 
     std::cout << "----multiply----" << std::endl;
-    vec c = vec(v.x * 2, v.y * 2, v.z * 2);
+    vec c = 2 * v;
     c.print("2 * v = ");
 
     std::cout << "----norm----" << std::endl;
