@@ -1,6 +1,7 @@
 #include<iostream>
 #include<cmath>
 #include<vector>
+#include<fstream>  // this is needed for std::ifstream and std::ofstream
 
 //---------------PART 1------------------
 // int main (int argc, char* argv[]) {
