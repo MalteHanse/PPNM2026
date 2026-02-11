@@ -1,8 +1,6 @@
 ----Print vector----
 v = 1 2 3
 w = 0.5 -0.5 1.5
-Overloaded <<:{ 1, 2, 3 } 
-Overloaded <<:{ 0.5, -0.5, 1.5 } 
 ----Add----
 v + w = 1.5 1.5 4.5
 ----subtract----

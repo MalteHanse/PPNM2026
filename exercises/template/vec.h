@@ -13,11 +13,12 @@ bool approx(double a, double b, double acc=1e-9, double eps=1e-9) {
     }
 }
 
+template <typename T>
 struct vec{
-    double x, y, z;
+    T x, y, z;
 
     // constructors
-    vec(double x, double y, double z) : x(x), y(y), z(z) {}     // parameterized ctor
+    vec(T x, T y, T z) : x(x), y(y), z(z) {}     // parameterized ctor
     vec() : vec(0, 0, 0) {}                                       // unparameterized ctor
     vec(const vec&) = default;                                  // copy
     vec(vec&&) = default;                                       // move
@@ -34,7 +35,7 @@ struct vec{
     vec& operator/=(double);
 
     // utility
-    void set(double a, double b, double c) {
+    void set(T a, T b, T c) {
         x = a;
         y = b;
         z = c;
@@ -47,8 +48,7 @@ struct vec{
 
     bool approx(const double a, const double b) const;
     bool approx(const vec& a, const vec& b) const {
-        // Fixed logic: return false if ANY component is NOT approximately equal
-        if (!::approx(a.x, b.x)) {  // using :: to call global approx function
+        if (!::approx(a.x, b.x)) {  
             return false;
         }
         if (!::approx(a.y, b.y)) {
@@ -83,22 +83,28 @@ struct vec{
 
 // non-member operators
 // vec operator-(const vec&);
-vec operator-(const vec& a, const vec& b) {
+template <typename T>
+vec<T> operator-(const vec<T>& a, const vec<T>& b) {
     return vec(a.x - b.x, a.y - b.y, a.z - b.z);
 }
-vec operator+(const vec& a, const vec& b) {
+template <typename T>
+vec<T> operator+(const vec<T>& a, const vec<T>& b) {
     return vec(a.x + b.x, a.y + b.y, a.z + b.z);
 }
-vec operator*(const vec& a, double c) {
+template <typename T>
+vec<T> operator*(const vec<T>& a, double c) {
     return vec(a.x * c, a.y * c, a.z * c);
 }
-vec operator*(double c, const vec& a) {
+template <typename T>
+vec<T> operator*(double c, const vec<T>& a) {
     return vec(c * a.x, c * a.y, c * a.z);
 }
-vec operator/(const vec& a, double c) {
+template <typename T>
+vec<T> operator/(const vec<T>& a, double c) {
     return vec(a.x / c, a.y / c, a.z / c);
 }
-std::ostream& operator<<(std::ostream& os, const vec& v){
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const vec<T>& v){
     os << "{ " << v.x << ", " << v.y << ", " << v.z << " } ";
     return os;
 }
