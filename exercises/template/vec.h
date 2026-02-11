@@ -1,6 +1,7 @@
 #pragma once
 #include<iostream>
 #include<cmath>
+#include<complex>
 
 bool approx(double a, double b, double acc=1e-9, double eps=1e-9) {
     double absolute = std::abs(a - b);
@@ -31,8 +32,8 @@ struct vec{
     // arithmetic
     vec& operator+=(const vec&);
     vec& operator-=(const vec&);
-    vec& operator*=(double);
-    vec& operator/=(double);
+    vec& operator*=(const T& s);
+    vec& operator/=(const T& s);
 
     // utility
     void set(T a, T b, T c) {
@@ -60,24 +61,23 @@ struct vec{
         return true;
     }
 
-    // dot-product
-    double dot(const vec& b) {
-        double sum = x * b.x + y * b.y + z * b.z;
-        return sum;
+    // dot-product for complex and real
+    auto dot(const vec& b) const {
+        return x*b.x + y*b.y + z*b.z;
     }
 
-    // cross-product
-    vec cross(const vec& b) {
-        double new_x = y * b.z - z * b.y;
-        double new_y = z * b.x - x * b.z;
-        double new_z = x * b.y - y * b.x;
+    // cross-product for complex and real
+    vec cross(const vec& b) const {
+        T new_x = y*b.z - z*b.y;
+        T new_y = z*b.x - x*b.z;
+        T new_z = x*b.y - y*b.x;
         return vec(new_x, new_y, new_z);
     }
 
-    // norm
-    double norm() {
-        double length = std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
-        return length;
+
+    // norm for complex and real
+    auto norm() const {
+        return std::sqrt(x*x + y*y + z*z);
     }
 };
 
@@ -92,15 +92,15 @@ vec<T> operator+(const vec<T>& a, const vec<T>& b) {
     return vec(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 template <typename T>
-vec<T> operator*(const vec<T>& a, double c) {
+vec<T> operator*(const vec<T>& a, const T& c) {
     return vec(a.x * c, a.y * c, a.z * c);
 }
 template <typename T>
-vec<T> operator*(double c, const vec<T>& a) {
+vec<T> operator*(const T& c, const vec<T>& a) {
     return vec(c * a.x, c * a.y, c * a.z);
 }
 template <typename T>
-vec<T> operator/(const vec<T>& a, double c) {
+vec<T> operator/(const vec<T>& a, const T& c) {
     return vec(a.x / c, a.y / c, a.z / c);
 }
 template <typename T>

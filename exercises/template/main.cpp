@@ -1,66 +1,60 @@
 #include<iostream>
 #include"vec.h"
+#include<complex>
 
-int main() {
-    vec v = vec(1.0, 2.0, 3.0);
-    vec w = vec(0.5, -0.5, 1.5);
+template<typename T>
+void test_vec(const std::string& label) {  // function which tests the vec class for the given type
+    std::cout << "-----------" << label << "--------------\n";
 
-    std::cout << "----Print vector----" << std::endl;
+    T x1 = T(1);
+    T y1 = T(2);
+    T z1 = T(3);
+
+    T x2 = T(5);
+    T y2 = T(-5);
+    T z2 = T(15);
+
+    vec<T> v{x1,y1,z1};
+    vec<T> w{x2,y2,z2};
+
+    std::cout << "----Print vector----\n";
     v.print("v = ");
     w.print("w = ");
+    std::cout << "<< : " << v << "\n";
+    std::cout << "<< : " << w << "\n";
 
-    std::cout << "----Add----" << std::endl;
-    vec a = v + w;
+    std::cout << "----Add----\n";
+    auto a = v + w;
     a.print("v + w = ");
 
-    std::cout << "----subtract----" << std::endl;
-    vec b = v - w;
+    std::cout << "----Subtract----\n";
+    auto b = v - w;
     b.print("v - w = ");
 
-    std::cout << "----multiply----" << std::endl;
-    vec c = 2 * v;
+    std::cout << "----Multiply----\n";
+    auto c = T(2) * v;
     c.print("2 * v = ");
 
-    std::cout << "----norm----" << std::endl;
-    std::cout << "norm = " << v.norm() << std::endl;
+    std::cout << "----Norm----\n";
+    std::cout << "norm = " << v.norm() << "\n";
 
-    std::cout << "----cross-product----" << std::endl;
-    vec x = v.cross(w);
+    std::cout << "----Cross-product----\n";
+    auto x = v.cross(w);
     x.print("v x w = ");
 
-    std::cout << "----dot-product----" << std::endl;
-    double y = v.dot(w);
-    std::cout << "v * w = " << y << std::endl;
+    std::cout << "----Dot-product----\n";
+    auto y = v.dot(w);
+    std::cout << "v * w = " << y << "\n\n";
+}
 
 
-    vec m = vec(1, 2, 3);
-    vec n = vec(5, -5, 15);
+int main() {
+    // Testing for all scalar types that support arithmetic operations
+    test_vec<double>("Double vector");
+    test_vec<long double>("Long Double vector");
+    test_vec<float>("Float vector");
+    test_vec<int>("Int vector");
+    test_vec<std::complex<double>>("Complex vector");
 
-    std::cout << "----Print vector----" << std::endl;
-    m.print("m = ");
-    n.print("n = ");
-
-    std::cout << "----Add----" << std::endl;
-    vec o = m + n;
-    o.print("m + n = ");
-
-    std::cout << "----subtract----" << std::endl;
-    vec p = m - n;
-    p.print("m - n = ");
-
-    std::cout << "----multiply----" << std::endl;
-    vec q = 2 * m;
-    q.print("2 * m = ");
-
-    std::cout << "----norm----" << std::endl;
-    std::cout << "norm = " << m.norm() << std::endl;
-
-    std::cout << "----cross-product----" << std::endl;
-    vec r = m.cross(n);
-    r.print("v x w = ");
-
-    std::cout << "----dot-product----" << std::endl;
-    double s = m.dot(n);
-    std::cout << "v * w = " << s << std::endl;
     return 0;
 }
