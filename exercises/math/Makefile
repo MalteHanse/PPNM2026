@@ -2,8 +2,8 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++23 -O2
 LDLIBS = -lm
 
-run: main
-	./main $(ARGS)
+# run: main
+# 	./main $(ARGS)
 
 Out.txt: main
 	./main > Out.txt
