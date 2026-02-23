@@ -2,10 +2,14 @@ CXX = g++ -std=c++23
 CXXFLAGS += -Wall -O
 LDLIBS += -lstdc++ -lm -lpthread
 
-Out.txt : main
-	./main > Out.txt
+run : Out.txt
+	cat Out.txt
+Out.txt: main
+	./$< > $@
 
-main.o : matrix.hpp
+main : main.o
+
+main.o : main.cpp matrix.hpp
 
 .PHONY: clean
 clean:

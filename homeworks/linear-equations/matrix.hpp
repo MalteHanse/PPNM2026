@@ -57,13 +57,13 @@ struct vector {
 		return std::sqrt(sum2);
 	}
 
-    double dot(const vector& other) {
-        double sum1 = 0;
-        for (int i=0; i<=size(); i++) {
-            sum1 += (*this)[i] * other[i];
-        return sum1;
-        }
-    }
+	double dot(const vector& other) const {
+		double sum1 = 0;
+		for (int i = 0; i < size(); i++) {
+			sum1 += (*this)[i] * other[i];
+		}
+		return sum1;
+	}
 
 	void print(std::string s="") const {
 		std::cout<<s<<" ";
@@ -156,16 +156,17 @@ struct matrix {
 		}
 	matrix& operator*=(const matrix&);
 	matrix  operator^(int);
-
-	void print(std::string s="") const{
-		std::cout << s << std::endl;
-		for(int i=0;i<size1();i++){
-			for(int j=0;j<size2();j++) {
-               std::cout << (*this)[i][j] << "\t";
-            }
-            std::cout << "\n";
-		}
-	}
+	
+	void print(std::string s="") const {
+    std::cout << s << std::endl;
+    std::cout << std::fixed << std::setprecision(4);
+    for(int i = 0; i < size1(); i++) {
+        for(int j = 0; j < size2(); j++) {
+            std::cout << std::setw(10) << (*this)(i, j);
+        }
+        std::cout << "\n";
+    }
+}
     matrix copy() const {
         return *this;
     }
