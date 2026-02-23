@@ -32,27 +32,20 @@ struct QR{
         pp::matrix Q = A.copy();
         pp::matrix R(A.size2(), A.size2());
         // orthogonalize Q and fill-in R
-        int n = A.size1();
         int m = A.size2();
         for (int i = 0; i < m; ++i) {
+            pp::vector v = A[i];
+            for (int j = 0; j < i; ++j) {
+                double r = Q[j].dot(A[i]);
+                R(j, i) = r;
+                v = v - r * Q[j];
+            }
 
-        pp::vector v = A[i];
-
-        for (int j = 0; j < i; ++j) {
-
-            double r = Q[j].dot(A[i]);
-            R(j, i) = r;
-
-            v = v - r * Q[j];
-        }
-
-        double norm_v = v.norm();
-        R[i][i] = norm_v;
-
-        Q[i] = v / norm_v;
+            double norm_v = v.norm();
+            R[i][i] = norm_v;
+            Q[i] = v / norm_v;
     }
-
-    return Q, R;
+        return Q, R;
     }
 
     pp::vector solve(const pp::matrix& Q, const pp::matrix& R, const pp::vector& b) {

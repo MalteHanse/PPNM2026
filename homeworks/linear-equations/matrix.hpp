@@ -158,10 +158,12 @@ struct matrix {
 	matrix  operator^(int);
 
 	void print(std::string s="") const{
-		printf("%s\n",s.c_str());
+		std::cout << s << std::endl;
 		for(int i=0;i<size1();i++){
-			for(int j=0;j<size2();j++)printf("%10.5g ",(*this)[i,j]);
-			printf("\n");
+			for(int j=0;j<size2();j++) {
+               std::cout << (*this)[i][j] << "\t";
+            }
+            std::cout << "\n";
 		}
 	}
     matrix copy() const {

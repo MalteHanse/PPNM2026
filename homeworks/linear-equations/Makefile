@@ -3,12 +3,13 @@ CXXFLAGS += -Wall -O
 LDLIBS += -lstdc++ -lm -lpthread
 
 Out.txt : main
+	./main > Out.txt
 
 main.o : matrix.hpp
 
 .PHONY: clean
 clean:
-	$(RM) $(EXECUTABLES) $(OBJECTS) $(DATA_FILES) $(PLOT_FILES) $(LOG_FILES) Out.txt
+	rm main main.o Out.txt
 test:
 	@echo $(CXX)
 	@echo $(CXXFLAGS)
