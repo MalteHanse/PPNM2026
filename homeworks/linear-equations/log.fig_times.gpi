@@ -1,0 +1,12 @@
+set terminal svg; \
+set output "fig_times.svg"; \
+set datafile separator "	"; \
+set tics in; \
+set xlabel "Matrix size N"; \
+set ylabel "elapsed time"; \
+a=0.1; b=1; \
+f(x)=a*x*x*x+b; \
+fit f(x) "out.times.data" using 1:2 via a,b; \
+plot \
+	"out.times.data" index 0 using 1:2 with linespoints title "times", \
+	f(x) title "Fit to N^3";
