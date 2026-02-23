@@ -15,7 +15,7 @@ fig_times.svg: out.times.data Makefile
 	plot \
 		"$<" index 0 using 1:2 with linespoints title "times", \
 		f(x) title "Fit to N^3";' |\
-	tee log.fig_times.gpi | gnuplot
+	gnuplot
 
 out.times.data : main
 	>$@
