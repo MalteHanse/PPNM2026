@@ -34,7 +34,7 @@ pp::vector random_vector(int n) {
     std::uniform_real_distribution<double> dist(0.0, 1.0);
     pp::vector b(n);
 
-    for (int j; j<n; j++) {
+    for (int j=0; j<n; j++) {
         b[j] = dist(gen);
     }
     return b;
