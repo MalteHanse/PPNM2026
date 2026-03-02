@@ -85,7 +85,7 @@ main.o : main.cpp matrix.hpp
 
 .PHONY: clean
 clean:
-	rm Out.txt main main.o out.rmax.data out.dr.data wavefunctions.dat fig_dr.svg fig_rmax.svg 
+	rm Out.txt main main.o out.rmax.data out.dr.data wavefunctions.dat diag_times.dat fig_waves.svg fig_diag_times.svg fig_dr.svg fig_rmax.svg fit.log 
 test:
 	@echo $(CXX)
 	@echo $(CXXFLAGS)
