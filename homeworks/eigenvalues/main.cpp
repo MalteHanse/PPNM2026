@@ -4,6 +4,7 @@
 #include<random>
 #include<cmath>
 #include<fstream>
+#include<thread>
 
 
 pp::matrix random_symmetric_matrix(int n) {
@@ -43,6 +44,25 @@ pp::vector random_vector(int n) {
     return b;
 }
 
+// linspace like in python to make life easier
+std::vector<double> linspace(double start, double stop, int num) {
+    std::vector<double> result;
+
+    if (num == 1) {
+        result.push_back(start);
+        return result;
+    }
+
+    double step = (stop - start) / (num - 1);
+
+    for (int i = 0; i < num; ++i) {
+        result.push_back(start + i * step);
+    }
+
+    return result;
+}
+
+// jacobi struct
 struct jacobi{
     int timesJ(pp::matrix& A, int p, int q, double theta) {  //pass A as reference else while loop gets stuck
        	double c=cos(theta),s=sin(theta);
@@ -97,6 +117,28 @@ struct jacobi{
         }
 };
 
+//  result struct for prallel processing
+struct timing_result {
+    int n;
+    double time;
+};
+
+// function, which times jacobi struct
+int time_jacobi(timing_result& result, int n) {
+    pp::matrix A = random_symmetric_matrix(n);
+
+    jacobi j;
+    auto start = std::chrono::high_resolution_clock::now();
+    auto [w, V] = j.cyclic(A);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = end - start;
+    result.n = n;
+    result.time = elapsed.count();
+    return 0;
+}
+
+// main
 int main(int argc, char** argv) {
     // PART 1
     std::cout << "----------PART A----------" << std::endl;
@@ -123,25 +165,31 @@ int main(int argc, char** argv) {
     std::cout << "----------PART B----------" << std::endl;
     std::cout << "Build Hamiltonian" << std::endl;
     
-    double rmax = 10.0; // default values
+    // define default values if inputs are not provided
+    double rmax = 10.0;
     double dr   = 0.1;
     std::string wf_file = "";
+    std::string diag_file = "";
 
+    // see which inputs are provided and update accordingly
     for(int i = 1; i < argc; i++){
         std::string arg = argv[i];
 
         if(arg == "-wf" && i + 1 < argc){
             wf_file = argv[++i];
         }
-
+        if(arg == "-diagf" && i + 1 < argc){
+            diag_file = argv[++i];
+        }
         if(arg == "-rmax" && i + 1 < argc){
             rmax = atof(argv[++i]);
         }
-        else if(arg == "-dr" && i + 1 < argc){
+        if(arg == "-dr" && i + 1 < argc){
             dr = atof(argv[++i]);
         }
     }
 
+    // given code to build the hamiltonian
     int npoints = (int)(rmax/dr) - 1;
     pp::vector r(npoints);
     for(int i=0; i<npoints; i++){
@@ -158,17 +206,15 @@ int main(int argc, char** argv) {
         H[i, i] += -1 / r[i];
     }
 
-    H.print("H = ");
-
+    // Diagonalization of H and saving its output to stderr
     std::cout << "Diagonalizing H and finding eigenvalues and eigenvectors" << std::endl;
     auto [wH, VH] = j.cyclic(H);
-    wH.print("Vector of eigenvalues: w = ");
-    VH.print("Matrix of eigenvectors: V = ");
 
     std::cerr << rmax << " " << dr << " " << wH[0] << std::endl;
 
+    // saving the wanted wavefunctions in specified file provided by input
     if (wf_file != "") {
-        std::ofstream wf("wavefunctions.dat");
+        std::ofstream wf(wf_file);
         for(int i = 0; i < npoints; i++){
             wf << r[i];
             for(int k = 0; k < 3; k++){
@@ -180,10 +226,31 @@ int main(int argc, char** argv) {
         wf.close();
     }
 
-
-
     // PART 3
     std::cout << "----------PART C----------" << std::endl;
+
+    // parrallel processing the matrix diagonalization and saving data into file specified as input
+    std::vector sizes = linspace(10, 300, 50);
+    int nsizes = sizes.size();
+    std::vector<std::thread> threads;
+    threads.reserve(nsizes);
+    std::vector<timing_result> results(nsizes);
+
+    for (int i=0; i<nsizes; i++) {
+        threads.emplace_back(time_jacobi, std::ref(results[i]), sizes[i]);
+    }
+
+    for (std::thread& t : threads) {
+        t.join();
+    }
+
+    if (diag_file != "") {
+        std::ofstream df(diag_file);
+        for (int i = 0; i < nsizes; i++) {
+            df << results[i].n << " " << results[i].time << std::endl;
+        }
+        df.close();
+    }
 
     return 0;
 }
