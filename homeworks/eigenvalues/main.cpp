@@ -1,8 +1,9 @@
 #include"matrix.hpp" 
 #include<vector> 
-#include<iostream> 
+#include<iostream>
 #include<random>
 #include<cmath>
+#include<fstream>
 
 
 pp::matrix random_symmetric_matrix(int n) {
@@ -99,7 +100,7 @@ struct jacobi{
 int main(int argc, char** argv) {
     // PART 1
     std::cout << "----------PART A----------" << std::endl;
-    int n = std::stoi(argv[1]);
+    int n = 3;
     pp::matrix A = random_symmetric_matrix(n);
 
     std::cout << "-----Checking jacobi-----" << std::endl;
@@ -120,8 +121,68 @@ int main(int argc, char** argv) {
 
     // PART 2
     std::cout << "----------PART B----------" << std::endl;
+    std::cout << "Build Hamiltonian" << std::endl;
+    
+    double rmax = 10.0; // default values
+    double dr   = 0.1;
+    std::string wf_file = "";
 
-    // PART 3'
+    for(int i = 1; i < argc; i++){
+        std::string arg = argv[i];
+
+        if(arg == "-wf" && i + 1 < argc){
+            wf_file = argv[++i];
+        }
+
+        if(arg == "-rmax" && i + 1 < argc){
+            rmax = atof(argv[++i]);
+        }
+        else if(arg == "-dr" && i + 1 < argc){
+            dr = atof(argv[++i]);
+        }
+    }
+
+    int npoints = (int)(rmax/dr) - 1;
+    pp::vector r(npoints);
+    for(int i=0; i<npoints; i++){
+        r[i] = dr * (i + 1);
+    }
+    pp::matrix H(npoints, npoints);
+    for(int i=0; i<npoints-1; i++){
+        H[i, i]  = -2 * (-0.5 / dr / dr);
+        H[i,i + 1]= 1 * (-0.5 / dr / dr);
+        H[i + 1, i]= 1 * (-0.5 / dr / dr);
+    }
+    H[npoints - 1, npoints - 1]= -2 * (-0.5 / dr / dr);
+    for(int i=0; i<npoints; i++){
+        H[i, i] += -1 / r[i];
+    }
+
+    H.print("H = ");
+
+    std::cout << "Diagonalizing H and finding eigenvalues and eigenvectors" << std::endl;
+    auto [wH, VH] = j.cyclic(H);
+    wH.print("Vector of eigenvalues: w = ");
+    VH.print("Matrix of eigenvectors: V = ");
+
+    std::cerr << rmax << " " << dr << " " << wH[0] << std::endl;
+
+    if (wf_file != "") {
+        std::ofstream wf("wavefunctions.dat");
+        for(int i = 0; i < npoints; i++){
+            wf << r[i];
+            for(int k = 0; k < 3; k++){
+                float VH_NORM = 1 / (std::sqrt(dr)) * VH[i][k];
+                wf << " " << VH_NORM;
+            }
+            wf << "\n";
+        }
+        wf.close();
+    }
+
+
+
+    // PART 3
     std::cout << "----------PART C----------" << std::endl;
 
     return 0;
