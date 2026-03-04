@@ -50,12 +50,19 @@ int main() {
 	};
 
     // solve least-squares
-    auto [c, Sigma] = lsfit(fs, x, y, dy);
+    pp::vector logy(y);
+    pp::vector logdy(y);
+    for (int i=0; i<y.size(); i++) {
+        logy[i] = std::log(y[i]);
+        logdy[i] = std::log(y[i])/dy[i];
+    }
+
+    auto [c, Sigma] = lsfit(fs, x, logy, logdy);
 
     // safe data to file
     std::ofstream data("decay.dat");
     for (int i=0; i<x.size(); i++) {
-        data << x[i] << " " << " " << y[i] << " " << dy[i] << std::endl;
+        data << x[i] << " " << " " << logy[i] << " " << logdy[i] << std::endl;
     }
     data.close();
 
@@ -75,6 +82,7 @@ int main() {
     // estimate half-life
     double lamb = c[1];
     double halflife = std::log(2) / lamb;
+    std::cout << "Theoretical Value: (3.6316 +/- 0.0014)days" << std::endl;
     std::cout  << "T_½ = " << halflife << "days" << std::endl;
 
     // PART B

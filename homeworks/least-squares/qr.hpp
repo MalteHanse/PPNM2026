@@ -48,7 +48,7 @@ namespace pp{
         // the determinant of a upper triangular matrix is the product 
         // of the diagonal elements
         double prod = 1;
-        for (int i; i<R.size1(); i++) {
+        for (int i=0; i<R.size1(); i++) {
             prod *= R[i][i];
         }
         return prod;
@@ -60,7 +60,7 @@ namespace pp{
         // thus we can find R^-1 column by column by solving R*c_k = e_k, where e_k is the k'th
         // basis vector which has 1 at the k'th position and 0 else
         pp::matrix R_inv(R);
-        for (int i; i<R.size2(); i++) {
+        for (int i=0; i<R.size2(); i++) {
             pp::vector ek(R.size1());
             ek[i] = 1;
             pp::vector ck = back_substitution(R, ek);
