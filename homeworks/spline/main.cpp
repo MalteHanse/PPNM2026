@@ -91,15 +91,9 @@ struct qspline {
             double dy  = y[i+1] - y[i];
             double dx1 = x[i+2] - x[i+1];
             double dy1 = y[i+2] - y[i+1];
-            // Continuity of derivative: b[i] same from both sides
-            // b[i] = (dy/dx) - c[i]*dx  and  b[i] = (dy1/dx1) - c[i+1]*dx1
-            // Setting equal and solving for c[i+1]:
             c[i+1] = (dy1/dx1 - dy/dx + c[i]*dx) / dx1;
         }
 
-        // Backward pass: average c to symmetrize
-        // The forward pass started with c[0]=0, which biases the result.
-        // Redo from the right end with c[n-2]=0 and average the two passes.
         pp::vector c2(n - 1);
         c2[n-2] = 0;
         for (int i = n - 3; i >= 0; i--) {
@@ -110,10 +104,10 @@ struct qspline {
             c2[i] = (dy/dx - dy1/dx1 + c2[i+1]*dx1) / dx;
         }
         for (int i = 0; i < n - 1; i++) {
-            c[i] = (c[i] + c2[i]) / 2.0;  // average the two passes
+            c[i] = (c[i] + c2[i]) / 2.0; 
         }
 
-        // Compute b coefficients from c
+        // compute b coefficients from c
         for (int i = 0; i < n - 1; i++) {
             double dx = x[i+1] - x[i];
             double dy = y[i+1] - y[i];
@@ -148,6 +142,90 @@ struct qspline {
 
         double dx = z - x[i];
         sum += y[i]*dx + b[i]*dx*dx/2.0 + c[i]*dx*dx*dx/3.0;
+        return sum;
+    }
+};
+
+struct cspline {
+    pp::vector x, y, b, c, d;
+
+    void cinterp(const pp::vector& xs, const pp::vector& ys) {
+        int n = xs.size();
+        x = xs;
+        y = ys;
+        b.resize(n);
+        c.resize(n - 1);
+        d.resize(n - 1);
+
+        pp::vector h(n - 1), p(n - 1);
+        for (int i = 0; i < n - 1; i++) {
+            h[i] = x[i+1] - x[i];
+            p[i] = (y[i+1] - y[i]) / h[i];
+        }
+
+        // build tridiagonal system
+        pp::vector D(n), Q(n - 1), B(n);
+        D[0] = 2;
+        for (int i = 0; i < n - 2; i++) {
+            D[i+1] = 2*h[i]/h[i+1] + 2;
+            D[n-1] = 2;
+        }
+        Q[0] = 1;
+        for (int i = 0; i < n - 2; i++) {
+            Q[i+1] = h[i]/h[i+1];
+        }
+        B[0] = 3*p[0];
+        for (int i = 0; i < n - 2; i++) {
+            B[i+1] = 3*(p[i] + p[i+1]*h[i]/h[i+1]);
+            B[n-1] = 3*p[n-2];
+        }
+
+        // Gauss elimination
+        for (int i = 1; i < n; i++) {
+            D[i] -= Q[i-1] / D[i-1];
+            B[i] -= B[i-1] / D[i-1];
+        }
+
+        // back-substitution
+        b[n-1] = B[n-1] / D[n-1];
+        for (int i = n - 2; i >= 0; i--) {
+            b[i] = (B[i] - Q[i]*b[i+1]) / D[i];
+        }
+
+        // compute c and d coefficients
+        for (int i = 0; i < n - 1; i++) {
+            c[i] = (-2*b[i] - b[i+1] + 3*p[i]) / h[i];
+            d[i] = ( b[i] + b[i+1] - 2*p[i]) / h[i] / h[i];
+        }
+    }
+
+    double evaluate(double z) {
+        /* evaluate the spline: y[i] + b[i]*(z-x[i]) + c[i]*(z-x[i])^2 + d[i]*(z-x[i])^3 */
+        cinterp(x, y);
+        int i = binsearch(x, z);
+        double dx = z - x[i];
+        return y[i] + dx*(b[i] + dx*(c[i] + dx*d[i]));
+    }
+
+    double derivative(double z) {
+        /* derivative: b[i] + 2*c[i]*(z-x[i]) + 3*d[i]*(z-x[i])^2 */
+        int i = binsearch(x, z);
+        double dx = z - x[i];
+        return b[i] + dx*(2*c[i] + dx*3*d[i]);
+    }
+
+    double integrate(double z) {
+        /* analytic integral from x[0] to z */
+        int i = binsearch(x, z);
+        double sum = 0;
+
+        for (int k = 0; k < i; k++) {
+            double dx = x[k+1] - x[k];
+            sum += dx*(y[k] + dx*(b[k]/2.0 + dx*(c[k]/3.0 + dx*d[k]/4.0)));
+        }
+
+        double dx = z - x[i];
+        sum += dx*(y[i] + dx*(b[i]/2.0 + dx*(c[i]/3.0 + dx*d[i]/4.0)));
         return sum;
     }
 };
@@ -190,16 +268,31 @@ int main() {
 
     // save interpolated data
     std::ofstream qinterp("qspline.dat");
-    pp::vector zs2 = linspace(xs[0], xs[xs.size() - 1], 100);
-    for (int i=0; i<zs2.size(); i++) {
-        std::cout << zs2[i] << std::endl;
-        double z = qspline.evaluate(zs2[i]);
-        double s = qspline.integrate(zs2[i]);
+    for (int i=0; i<zs.size(); i++) {
+        double z = qspline.evaluate(zs[i]);
+        double s = qspline.integrate(zs[i]);
+        double d = qspline.derivative(zs[i]);
 
-        qinterp << zs2[i] << " " << z << " " << s << std::endl;
+        qinterp << zs[i] << " " << z << " " << s << " " << d << std::endl;
     }
     qinterp.close();
 
+    //-----------PART C---------------
+    cspline cspline;
+    cspline.x = xs;
+    cspline.y = ys;
+
+    // save interpolated data
+    std::ofstream cinterp("cspline.dat");
+    for (int i=0; i<zs.size(); i++) {
+        std::cout << zs[i] << std::endl;
+        double z = cspline.evaluate(zs[i]);
+        double s = cspline.integrate(zs[i]);
+        double d = cspline.derivative(zs[i]);
+
+        cinterp << zs[i] << " " << z << " " << s << " " << d << std::endl;
+    }
+    cinterp.close();
 
     return 0;
 }
