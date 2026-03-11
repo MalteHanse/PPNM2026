@@ -151,7 +151,10 @@ int main(int argc, char** argv) {
     auto [w, V] = j.cyclic(A);
     V.print("V = ");
     w.print("w = ");
-    pp::matrix D = V.transpose() * A * V;
+    pp::matrix D(w.size(), w.size());
+    for (int i=0; i<D.size1(); i++) {
+        D[i][i] = w[i];
+    }
     D.print("D =");
     pp::matrix VDV = V * D * V.transpose();
     VDV.print("V * D * V^T = A =");
