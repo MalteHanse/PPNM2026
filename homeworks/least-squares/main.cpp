@@ -29,8 +29,10 @@ std::pair<pp::vector, pp::matrix> lsfit(
         pp::vector c = qr.solve(Q, R, y);
 
         // calculate covariance matrix
-        pp::matrix AI = qr.inverse(Q, R);
-        pp::matrix Sigma = AI * AI.transpose();
+        pp::matrix I(R);
+        I.setid();
+        pp::matrix RI = qr.inverse(I, R);
+        pp::matrix Sigma = RI * RI.transpose();
 
         return {c, Sigma};
 }
@@ -54,7 +56,7 @@ int main() {
     pp::vector logdy(y);
     for (int i=0; i<y.size(); i++) {
         logy[i] = std::log(y[i]);
-        logdy[i] = std::log(y[i])/dy[i];
+        logdy[i] = dy[i]/y[i];
     }
 
     auto [c, Sigma] = lsfit(fs, x, logy, logdy);
