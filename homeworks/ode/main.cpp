@@ -110,7 +110,7 @@ int main() {
     for (int i=0; i<(int)epss.size(); i++) {
         pp::vector init = {1.0, uprimes[i]};
         auto F = makeOrbit(epss[i]);
-        auto [phis, us] = driver(F, {0.0, 8*M_PI}, init, 0.01, 1e-6, 1e-6);
+        auto [phis, us] = driver(F, {0.0, 8*M_PI}, init, 0.01, 1e-2, 1e-2);
         results_phi.push_back(phis);
         results_u.push_back(us);
     }
