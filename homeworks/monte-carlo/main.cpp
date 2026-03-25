@@ -117,9 +117,25 @@ double strata(
     int N,
     double acc=0.001,
     double eps=0.001) {
+        int dim = a.size();
         auto [area, err] = plainmc(f, a, b, N);
 
-        if 
+        double tol = acc + std::abs(area) * eps; 
+        if(err < tol) return area;
+
+        int idiv = 0;
+        double maxvar = 0;
+        pp::vector a2(dim);
+        pp::vector b2(dim);
+        for (int i=0; i<dim; i++) {
+            a2[i] = a[i];
+            b2[i] = b[i];
+        }
+        a2[idiv] = (a[idiv] + b[idiv])/2;
+        b2[idiv] = (a[idiv] + b[idiv])/2;
+        double area_left = strata(f, a, b2, N)
+
+
 };
 
 int main() {
