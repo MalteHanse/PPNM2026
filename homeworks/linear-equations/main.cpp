@@ -8,7 +8,7 @@ pp::matrix random_matrix(int n, int m) {
     if (n < m) {
         throw std::invalid_argument("Require n > m");
     }
-
+    
     // Random device for seeding
     std::random_device rd;
 
