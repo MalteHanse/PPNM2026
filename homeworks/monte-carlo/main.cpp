@@ -110,33 +110,39 @@ std::pair<double, double> quasimc(
 };
 
 // recursive stratified mc integration copied from lecture note and translated into C++
-double strata(
-    std::function<double(pp::vector)> f,
-    pp::vector a,
-    pp::vector b,
-    int N,
-    double acc=0.001,
-    double eps=0.001) {
-        int dim = a.size();
-        auto [area, err] = plainmc(f, a, b, N);
+std::pair<double, double> strata(
+      std::function<double(pp::vector)> f,
+      pp::vector a,
+      pp::vector b,
+      int N,
+      double acc = 0.01,
+      double eps = 0.01) {
 
-        double tol = acc + std::abs(area) * eps; 
-        if(err < tol) return area;
+      int dim = a.size();
+      auto [area, err] = plainmc(f, a, b, N);
 
-        int idiv = 0;
-        double maxvar = 0;
-        pp::vector a2(dim);
-        pp::vector b2(dim);
-        for (int i=0; i<dim; i++) {
-            a2[i] = a[i];
-            b2[i] = b[i];
-        }
-        a2[idiv] = (a[idiv] + b[idiv])/2;
-        b2[idiv] = (a[idiv] + b[idiv])/2;
-        double area_left = strata(f, a, b2, N)
+      double tol = acc + std::abs(area) * eps;
+      if (err < tol) return {area, err};  // also return the error!
 
+      // find dimension with largest variance
+      int idiv = 0;
+      double maxvar = err;  // use error as proxy for variance
 
-};
+      // split in half along dimension idiv
+      double midpoint = (a[idiv] + b[idiv]) / 2;
+
+      // Left half: original a, new b (midpoint)
+      pp::vector b_left = b;
+      b_left[idiv] = midpoint;
+      auto [area_left, err_left] = strata(f, a, b_left, N, acc, eps);
+
+      // Right half: new a (midpoint), original b
+      pp::vector a_right = a;
+      a_right[idiv] = midpoint;
+      auto [area_right, err_right] = strata(f, a_right, b, N, acc, eps);
+
+      return {area_left + area_right, std::sqrt(err_left*err_left + err_right*err_right)};
+  };
 
 int main() {
     std::cout << "----------PART A------------" << std::endl;

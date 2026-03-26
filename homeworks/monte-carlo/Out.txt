@@ -1,5 +1,5 @@
 ----------PART A------------
-Area of unit circle: 3.12128 ≈ π
-Volume of complicated function: 1.41152 ≈ 1.393
+Area of unit circle: 3.17952 ≈ π
+Volume of complicated function: 1.39303 ≈ 1.393
 -----------PART B------------
 ------------PART C------------
