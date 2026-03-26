@@ -2,7 +2,20 @@ CXX = g++ -std=c++23
 CXXFLAGS += -Wall -O
 LDLIBS += -lstdc++ -lm -lpthread
 
-all: Out.txt fig_ode_result.svg fig_orbits.svg
+all: Out.txt fig_ode_result.svg fig_orbits.svg fig_three_body.svg
+
+fig_three_body.svg: three_body.dat Makefile
+	echo '\
+	set terminal svg ;\
+	set output "fig_three_body.svg" ;\
+	set xlabel "x" ;\
+	set ylabel "y" ;\
+	set title "Stable Orbits" ;\
+	plot \
+		"three_body.dat" using 2:3 with lines title "Planet 1",  \
+		"three_body.dat" using 4:5 with lines title "Planet 2", \
+		"three_body.dat" using 6:7 with lines title "Planet 3"' \
+	|gnuplot
 
 fig_orbits.svg : orbits.dat Makefile
 	echo 'set terminal svg; \

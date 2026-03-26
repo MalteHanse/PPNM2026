@@ -100,8 +100,8 @@ int main() {
     };
 
     // inital condition to change in the loop
-    std::vector<double> epss    = {0.0,  0.0, 0.01};
-    std::vector<double> uprimes = {0.0, -0.5, -0.5};
+    std::vector<double> epss    = {0.0001,  0.0, 0.01};
+    std::vector<double> uprimes = {0.01, -0.5, -0.5};
 
     // vectors to store orbits
     std::vector<std::vector<double>> results_phi;
@@ -131,6 +131,49 @@ int main() {
     //-----------PART C------------
     std::cout << "------------PART C--------------" << std::endl;
     // I dont know if I want to do this
+    double a = 0;
+    double b = 2 * M_PI;
+    pp::vector y_init {
+        1.0,  0.0,   // r0
+        -0.5,  0.866025403784,  // r1
+        -0.5, -0.866025403784,  // r2
+        0.0,  0.5,   // v0
+        -0.433012701892, -0.25, // v1
+        0.433012701892, -0.25  // v2
+    };
+    std::function<pp::vector(double, pp::vector)> stable_orbit = [=](double x, pp::vector y){
+        pp::vector dydx(12);
+        for (int i = 0; i < 6; ++i) {
+            dydx[i] = y[6 + i];
+        }
+        for (int i = 0; i < 3; ++i) {
+            pp::vector ri {y[2*i], y[2*i + 1]};
+            pp::vector dv {0.0, 0.0};
+            for (int j = 0; j < 3; ++j) {
+                if (j != i) {
+                    pp::vector rj {y[2*j], y[2*j + 1]};
+                    pp::vector dr = rj - ri;
+                    double norm = dr.norm();
+                    dv += dr / (norm * norm * norm);
+                }
+            }
+            dydx[6 + 2*i] = dv[0];
+            dydx[6 + 2*i + 1] = dv[1];
+        }
+        return dydx;
+    };
+
+    auto [resultx, resulty] = driver(stable_orbit, {a, b}, y_init, 0.01, 1e-6, 1e-6);
+
+    std::ofstream three_body_data("three_body.dat");
+    for (int i = 0; i < (int)resultx.size(); i++){
+        three_body_data << resultx[i];
+        for (int j = 0; j < 12; j++){
+            three_body_data << " " << resulty[i][j];
+        }
+        three_body_data << std::endl;
+    }
+    three_body_data.close();
 
     return 0;
 }
