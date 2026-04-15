@@ -65,31 +65,26 @@ pp::vector newton_interp(
     do {
         if (fx.norm() < acc) break;
 
-        // Jacobian + Newton step (identical to original newton)
         jacobian(f, x, fx, dx, J);
         pp::QR     QRJ;
         auto [Q, R]   = QRJ.decomp(J);
         pp::vector Dx = QRJ.solve(Q, R, -fx);
 
-        double phi0  =  0.5 * fx.norm() * fx.norm();  // phi(0)
-        double dphi0 = -fx.norm() * fx.norm();         // phi'(0) = -||f||^2
+        double phi0  =  0.5 * fx.norm() * fx.norm();
+        double dphi0 = -fx.norm() * fx.norm();        
 
-        // Returns {accepted_lambda, f(x + lambda*Dx)} without double evaluation
+        // search function
         std::function<std::pair<double, pp::vector>(double, pp::vector)>
         search = [&](double lamb, pp::vector fz) -> std::pair<double, pp::vector>
         {
             double phi_lamb = 0.5 * fz.norm() * fz.norm();
 
-            // Armijo condition satisfied → accept
             if (phi_lamb < phi0 * (1.0 - lamb / 2.0)) return {lamb, fz};
-            // Too small → accept unconditionally
-            if (lamb < lambmin)                        return {lamb, fz};
+            if (lamb < lambmin) return {lamb, fz};
 
-            // Quadratic interpolation (equations 10-12)
-            double c        = (phi_lamb - phi0 - dphi0 * lamb) / (lamb * lamb);
+            double c = (phi_lamb - phi0 - dphi0 * lamb) / (lamb * lamb);
             double lamb_new = -dphi0 / (2.0 * c);
 
-            // Clamp to (lambmin, 0.9*lamb) for guaranteed progress
             lamb_new = std::max(lambmin, std::min(0.9 * lamb, lamb_new));
 
             return search(lamb_new, f(x + lamb_new * Dx)); // recurse
