@@ -7,14 +7,14 @@
 #include"qr.hpp"
 #include"ode.hpp"
 
-pp::matrix jacobian(
+pp::matrix& jacobian(  // to allocate just one matrix and update it we use a reference instead (idea from AI)
     std::function<pp::vector(pp::vector)> f,
     pp::vector x,
-    pp::vector fx=pp::vector(),
-    pp::vector dx=pp::vector()) {
+    pp::vector fx,
+    pp::vector dx,
+    pp::matrix& J) {
         if(dx.size() == 0) dx = x.map([](double xi) { double eps = std::max(std::abs(xi), 1.0); return eps * std::pow(2, -26); });
         if(fx.size() == 0) fx = f(x);
-        pp::matrix J = pp::matrix(x.size(), x.size());
         for(int j=0; j < x.size(); j++){
             x[j] += dx[j];
             pp::vector df = f(x) - fx;
@@ -32,9 +32,10 @@ pp::vector newton(
 	double lambmin=0.01) {
     pp::vector x(start);
     pp::vector fx=f(x), z, fz;
+    pp::matrix J(start.size(), start.size());  // create matrix once
     do{ /* Newton's iterations */
         if(fx.norm() < acc) break; /* job done */
-        pp::matrix J=jacobian(f,x,fx,dx);
+        jacobian(f,x,fx,dx,J);  // update it
         pp::QR QRJ;
         auto [Q, R] = QRJ.decomp(J);
         pp::vector Dx = QRJ.solve(Q, R, -fx); /* Newton's step */
@@ -49,6 +50,75 @@ pp::vector newton(
         x=z; fx=fz;
         }while(true);
     return x;
+}
+
+pp::vector newton_interp(
+    std::function<pp::vector(pp::vector)> f,
+    pp::vector start,
+    double acc     = 1e-2,
+    pp::vector dx  = pp::vector(),
+    double lambmin = 1.0/128) {
+    pp::vector x  = start;
+    pp::vector fx = f(x);
+    pp::matrix J(start.size(), start.size());  // create matrix once
+
+    do {
+        if (fx.norm() < acc) break;
+
+        // Jacobian + Newton step (identical to original newton)
+        jacobian(f, x, fx, dx, J);
+        pp::QR     QRJ;
+        auto [Q, R]   = QRJ.decomp(J);
+        pp::vector Dx = QRJ.solve(Q, R, -fx);
+
+        double phi0  =  0.5 * fx.norm() * fx.norm();  // phi(0)
+        double dphi0 = -fx.norm() * fx.norm();         // phi'(0) = -||f||^2
+
+        // Returns {accepted_lambda, f(x + lambda*Dx)} without double evaluation
+        std::function<std::pair<double, pp::vector>(double, pp::vector)>
+        search = [&](double lamb, pp::vector fz) -> std::pair<double, pp::vector>
+        {
+            double phi_lamb = 0.5 * fz.norm() * fz.norm();
+
+            // Armijo condition satisfied → accept
+            if (phi_lamb < phi0 * (1.0 - lamb / 2.0)) return {lamb, fz};
+            // Too small → accept unconditionally
+            if (lamb < lambmin)                        return {lamb, fz};
+
+            // Quadratic interpolation (equations 10-12)
+            double c        = (phi_lamb - phi0 - dphi0 * lamb) / (lamb * lamb);
+            double lamb_new = -dphi0 / (2.0 * c);
+
+            // Clamp to (lambmin, 0.9*lamb) for guaranteed progress
+            lamb_new = std::max(lambmin, std::min(0.9 * lamb, lamb_new));
+
+            return search(lamb_new, f(x + lamb_new * Dx)); // recurse
+        };
+
+        auto [lamb, fz] = search(1.0, f(x + Dx));
+        x  = x + lamb * Dx;
+        fx = fz;
+
+    } while (true);
+
+    return x;
+};
+
+std::vector<double> linspace(double start, double stop, int num) {
+    std::vector<double> result;
+
+    if (num == 1) {
+        result.push_back(start);
+        return result;
+    }
+
+    double step = (stop - start) / (num - 1);
+
+    for (int i = 0; i < num; ++i) {
+        result.push_back(start + i * step);
+    }
+
+    return result;
 }
 
 int main() {
@@ -99,14 +169,32 @@ int main() {
         };
         double rmin = 0.01;
         double rmax = 8.0;
-        pp::vector f_init {rmin, rmin - rmin*rmin};
-        auto [rs, fs] = pp::driver(wave, {rmin, rmax}, f_init);
-        return fs[fs.size()-1][0];
-    };
-    pp::vector start_wave {2.0};
-    pp::vector roots_wave = newton(FE, start_wave);
-    roots_wave.print("fs[0]=");
+        pp::vector f_init {rmin - rmin*rmin, 1.0 - 2.0*rmin};
 
+        auto [rs, fs] = pp::driver(wave, {rmin, rmax}, f_init);
+
+        std::vector r = linspace(0, 8, (int)rs.size());
+        std::ofstream outfile("wave.dat");
+        for (int j = 0; j < (int)rs.size(); j++) {
+            double exact = r[j] * std::exp(-r[j]);
+            outfile << rs[j] << " " << fs[j][0] << " " << exact << std::endl;
+        }
+        outfile.close();
+
+        return pp::vector{fs[fs.size()-1][0]};
+    };
+    pp::vector start_wave {-0.9};
+    pp::vector roots_wave = newton(FE, start_wave);
+
+    roots_wave.print("E=");
+    std::cout << "Exact result: E=-1/2" << std::endl;
+
+    // ---------PART C------------
+    std::cout << "---------PART C------------" << std::endl;
+    pp::vector roots_wave_new = newton_interp(FE, start_wave);
+    std::cout << "Results with Quadratic Interpolation line-search" << std::endl;
+    roots_wave_new.print("E=");
+    std::cout << "Exact result: E=-1/2" << std::endl;
 
     return 0;
 }

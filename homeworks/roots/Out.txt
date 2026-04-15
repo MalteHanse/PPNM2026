@@ -4,4 +4,9 @@ Analytical result = (1, 1)
 f(x)=0 for himmelblau at x=   -0.270848 -0.922979 
 Analytical result = (-0.270845, -0.923039)
 ---------PART B------------
-fs[0]= 2 
+E= -0.500017 
+Exact result: E=-1/2
+---------PART C------------
+Results with Quadratic Interpolation line-search
+E= -0.500017 
+Exact result: E=-1/2
