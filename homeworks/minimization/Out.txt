@@ -1,0 +1,5 @@
+-----------PART A-------------
+Rosenbrock minimum at:  0.999902 0.999804 
+Found with 147 evaluations. Analytic minimum rosenbrock: (1.0, 1.0)
+Himmelblau minimum at:  2.99999 2.00003 
+Found with 87 evaluations. Analytic minimum Himmelblau: (3.0, 2.0)
