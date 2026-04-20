@@ -228,7 +228,7 @@ int main() {
         double error = 0;
         for (int i=0; i<E.size(); i++) {
             double F = breit_wigner(E[i], p);
-            error += ((F + S[i]) / S_err[i]) * ((F + S[i]) / S_err[i]);
+            error += ((F - S[i]) / S_err[i]) * ((F - S[i]) / S_err[i]);
         }
         return error;
     };
@@ -242,7 +242,7 @@ int main() {
     std::vector Es = linspace(100, 170, 200);
     std::ofstream outfile("higgs_fit.dat");
     for (int i=0; i<(int)Es.size(); i++) {
-        outfile << Es[i] << " " << -S[i] << " " << S_err[i] << " " << breit_wigner(Es[i], p_opt) << std::endl;
+        outfile << Es[i] << " " << S[i] << " " << S_err[i] << " " << breit_wigner(Es[i], p_opt) << std::endl;
     }
     outfile.close();
 

@@ -35,7 +35,7 @@ Found with 87 evaluations. Analytic minimum Himmelblau: (3.0, 2.0)
 157 1.76 0.9
 159 -0.5 0.9
 Loaded 30 data points
-(A, m, Gamma) =  0.870878 120.213 1.23311 
+(A, m, Gamma) =  0.286246 122.343 1.5575 
 ----------PART C-------------
 Rosenbrock minimum at:  0.999815 0.999627 
 Himmelblau minimum at:  2.99999 2.00002 
