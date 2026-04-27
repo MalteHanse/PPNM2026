@@ -41,9 +41,9 @@ struct ann{
     };
 
     // derivatives and anit derivative of activation 
-    std::function<double(double)> df  = [](double x){ return std::exp(-x*x) * (1 - 2*x*x); };
+    std::function<double(double)> df = [](double x){ return std::exp(-x*x) * (1 - 2*x*x); };
     std::function<double(double)> ddf = [](double x){ return std::exp(-x*x) * x * (4*x*x - 6); };
-    std::function<double(double)> F   = [](double x){ return -0.5 * std::exp(-x*x); };
+    std::function<double(double)> F = [](double x){ return -0.5 * std::exp(-x*x); };
 
     double forward(double x) const {
         double y = 0;
@@ -82,7 +82,7 @@ struct ann{
         double y = 0;
         for (int i=0; i<n; i++) {
             double center = p[3*i], width = p[3*i+1], weight = p[3*i+2];
-            double z  = (x  - center) / width;
+            double z = (x  - center) / width;
             double z0 = (x0 - center) / width;
             y += weight * width * (F(z) - F(z0));
         }
@@ -134,7 +134,7 @@ struct ann{
                 double y_pred = 0;
                 for (int j=0; j<n; j++) {
                     double center = p[3*j];
-                    double width  = p[3*j+1];
+                    double width = p[3*j+1];
                     double weight = p[3*j+2];
                     y_pred += f((xs[i] - center) / width) * weight;
                 }
@@ -144,14 +144,14 @@ struct ann{
                 // backward pass
                 for (int j=0; j<n; j++) {
                     double center = p[3*j];
-                    double width  = p[3*j+1];
+                    double width = p[3*j+1];
                     double weight = p[3*j+2];
-                    double z      = (xs[i] - center) / width;
-                    double fz     = f(z);
-                    double dfz    = df(z);
+                    double z = (xs[i] - center) / width;
+                    double fz = f(z);
+                    double dfz = df(z);
 
                     // analytic gradients of graph
-                    grad[3*j]   += 2 * error * weight * dfz * (-1.0 / width);  
+                    grad[3*j] += 2 * error * weight * dfz * (-1.0 / width);  
                     grad[3*j+1] += 2 * error * weight * dfz * (-z / width);    
                     grad[3*j+2] += 2 * error * fz;                              
                 }
@@ -217,6 +217,7 @@ int main() {
     // PART C
     std::cout << "----------PART C-----------" << std::endl;
     
+
 
     return 0;
 }

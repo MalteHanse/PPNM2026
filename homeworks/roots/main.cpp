@@ -154,39 +154,73 @@ int main() {
 
     // ---------PART B------------
     std::cout << "---------PART B------------" << std::endl;
-    auto FE = [](pp::vector E) {
-        double e = E[0];
-        auto wave = [e](double r, pp::vector f) {
-            pp::vector dfdr(2);
-            dfdr[0] = f[1];
-            dfdr[1] = -2.0 * (e * f[0] + 1/r * f[0]);
-            return dfdr;
+    auto makeFE = [](double rmin, double rmax, double h, double acc, double eps, std::string filename) {
+        return [=](pp::vector E) {
+            double e = E[0];
+            auto wave = [e](double r, pp::vector f) {
+                pp::vector dfdr(2);
+                dfdr[0] = f[1];
+                dfdr[1] = -2.0 * (e * f[0] + 1.0/r * f[0]);
+                return dfdr;
+            };
+
+            pp::vector f_init {rmin - rmin*rmin, 1.0 - 2.0*rmin};
+            auto [rs, fs] = pp::driver(wave, {rmin, rmax}, f_init, h, acc, eps);
+
+            std::ofstream outfile(filename);
+            for (int j = 0; j < (int)rs.size(); j++) {
+                double exact = rs[j] * std::exp(-rs[j]);
+                outfile << rs[j] << " " << fs[j][0] << " " << exact << "\n";
+            }
+            outfile.close();
+            return pp::vector{fs[fs.size()-1][0]};
         };
-        double rmin = 0.01;
-        double rmax = 8.0;
-        pp::vector f_init {rmin - rmin*rmin, 1.0 - 2.0*rmin};
-
-        auto [rs, fs] = pp::driver(wave, {rmin, rmax}, f_init);
-
-        std::vector r = linspace(0, 8, (int)rs.size());
-        std::ofstream outfile("wave.dat");
-        for (int j = 0; j < (int)rs.size(); j++) {
-            double exact = r[j] * std::exp(-r[j]);
-            outfile << rs[j] << " " << fs[j][0] << " " << exact << std::endl;
-        }
-        outfile.close();
-
-        return pp::vector{fs[fs.size()-1][0]};
     };
-    pp::vector start_wave {-0.9};
-    pp::vector roots_wave = newton(FE, start_wave);
+
+    pp::vector start_wave {-2};
+
+    std::vector<double> rmin_vals = {1e-5, 1e-3, 1e-2, 1e-1};
+    std::vector<double> rmax_vals = {1, 3, 5, 10};
+    std::vector<double> acc_vals  = {1e-5, 1e-3, 1e-2, 0.1};
+    std::vector<double> eps_vals  = {1e-5, 1e-3, 1e-2, 0.1};
+
+    // base values
+    double base_rmin = 1e-9, base_rmax = 8.0, base_h = 0.125;
+    double base_acc = 0.01, base_eps = 0.01;
+
+    // change rmin
+    for (int i = 0; i < (int)rmin_vals.size(); i++) {
+        std::string fname = "wave_rmin_" + std::to_string(i) + ".dat";
+        newton(makeFE(rmin_vals[i], base_rmax, base_h, base_acc, base_eps, fname), start_wave);
+    }
+
+    // chnage rmax
+    for (int i = 0; i < (int)rmax_vals.size(); i++) {
+        std::string fname = "wave_rmax_" + std::to_string(i) + ".dat";
+        newton(makeFE(base_rmin, rmax_vals[i], base_h, base_acc, base_eps, fname), start_wave);
+    }
+
+    // change acc
+    for (int i = 0; i < (int)acc_vals.size(); i++) {
+        std::string fname = "wave_acc_" + std::to_string(i) + ".dat";
+        newton(makeFE(base_rmin, base_rmax, base_h, acc_vals[i], base_eps, fname), start_wave);
+    }
+
+    // change eps
+    for (int i = 0; i < (int)eps_vals.size(); i++) {
+        std::string fname = "wave_eps_" + std::to_string(i) + ".dat";
+        newton(makeFE(base_rmin, base_rmax, base_h, base_acc, eps_vals[i], fname), start_wave);
+    }
+
+    // the optimal wavefunction
+    pp::vector roots_wave = newton(makeFE(1e-9, 8.0, 0.125, 0.01, 0.01, "wave.dat"), start_wave);
 
     roots_wave.print("E=");
     std::cout << "Exact result: E=-1/2" << std::endl;
 
     // ---------PART C------------
     std::cout << "---------PART C------------" << std::endl;
-    pp::vector roots_wave_new = newton_interp(FE, start_wave);
+    pp::vector roots_wave_new = newton_interp(makeFE(1e-9, 8.0, 0.125, 0.01, 0.01, "wave_base_quad.dat"), start_wave);
     std::cout << "Results with Quadratic Interpolation line-search" << std::endl;
     roots_wave_new.print("E=");
     std::cout << "Exact result: E=-1/2" << std::endl;

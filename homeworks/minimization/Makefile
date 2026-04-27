@@ -11,7 +11,7 @@ fig_higgs.svg : higgs_fit.dat Makefile
 	set xlabel "x"; \
 	set ylabel "y"; \
 	plot \
-		"higgs.dat" using 1:2 with points title "Data", \
+		"higgs.dat" using 1:2:3 with yerrorbars title "Data", \
 		"higgs_fit.dat" using 1:4 with lines dt 1 title "Fit"' |\
 	gnuplot
 

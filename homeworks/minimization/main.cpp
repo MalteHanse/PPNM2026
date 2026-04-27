@@ -234,7 +234,7 @@ int main() {
     };
 
     // make fit
-    pp::vector p_guess {1.0, 120.0, 1.0};
+    pp::vector p_guess {15.0, 125.0, 4.0};
     pp::vector p_opt = newton(resid_error, gradient, hessian, p_guess, 0.001, 1000);
     p_opt.print("(A, m, Gamma) = ");
 
