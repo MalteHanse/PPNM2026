@@ -11,9 +11,12 @@ fig_network.svg : network.dat Makefile
 	set xlabel "x"; \
 	set ylabel "y"; \
 	plot \
-		"network.dat" using 4:5 with points dt 2 title "Data", \
-		"network.dat" using 1:3 with lines dt 1 title "g(x)", \
-		"network.dat" using 1:2 with lines title "NN"' |\
+		"network.dat" using 7:8 with points dt 2 title "Data", \
+		"network.dat" using 1:2 with lines dt 1 title "nn(x)", \
+		"network.dat" using 1:3 with lines dt 1 title "dnn(x)", \
+		"network.dat" using 1:4 with lines dt 1 title "ddnn(x)", \
+		"network.dat" using 1:5 with lines dt 1 title "NN(x)", \
+		"network.dat" using 1:6 with lines title "g(x)"' |\
 	gnuplot
 
 # build output
