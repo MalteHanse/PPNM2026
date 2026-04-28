@@ -7,7 +7,7 @@ all: Out.txt fig_network.svg
 fig_network.svg : network.dat Makefile
 	echo 'set terminal svg; \
 	set output "fig_network.svg"; \
-	set title "Wavefunction"; \
+	set title "Neural network output"; \
 	set xlabel "x"; \
 	set ylabel "y"; \
 	plot \
